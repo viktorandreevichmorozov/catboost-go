@@ -97,18 +97,22 @@ func (model *Model) CalcModelPrediction(floats [][]float32, floatLength int, cat
 
 	floatsC := C.makeFloatArray(C.int(nSamples))
 	defer C.free(unsafe.Pointer(floatsC))
-	for i, v := range floats {
-		C.setFloatArray(floatsC, (*C.float)(&v[0]), C.int(i))
+	if floatLength > 0 {
+		for i, v := range floats {
+			C.setFloatArray(floatsC, (*C.float)(&v[0]), C.int(i))
+		}
 	}
 
 	catsC := C.makeCharArray2(C.int(nSamples))
 	defer C.freeCharArray2(catsC, C.int(nSamples), C.int(catLength))
-	for i, cat := range cats {
-		catC := C.makeCharArray(C.int(len(cat)))
-		for i, c := range cat {
-			C.setCharArray(catC, C.CString(c), C.int(i))
+	if catLength > 0 {
+		for i, cat := range cats {
+			catC := C.makeCharArray(C.int(len(cat)))
+			for i, c := range cat {
+				C.setCharArray(catC, C.CString(c), C.int(i))
+			}
+			C.setCharArray2(catsC, catC, C.int(i))
 		}
-		C.setCharArray2(catsC, catC, C.int(i))
 	}
 
 	if !C.CalcModelPrediction(
